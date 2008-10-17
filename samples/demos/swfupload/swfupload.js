@@ -103,17 +103,23 @@ SWFUpload.prototype.initSettings = function () {
 	// Flash Settings
 	this.ensureDefault("flash_url", "swfupload_f9.swf");
 	this.ensureDefault("flash_color", "#FFFFFF");
+	this.ensureDefault("flash_wmode", "transparent");
+	this.ensureDefault("flash_container_id", null);
+	this.ensureDefault("flash_width", '100%');
+	this.ensureDefault("flash_height", '100%');
 
 	// Button Settings
+	/*
 	this.ensureDefault("button_image_url", 0);
 	this.ensureDefault("button_width", 1);
 	this.ensureDefault("button_height", 1);
 	this.ensureDefault("button_text", "");
-	this.ensureDefault("button_text_style", "color: #000000; font-size: 16pt;");
+	this.ensureDefault("button_text_style", "");
 	this.ensureDefault("button_action", SWFUpload.BUTTON_ACTION.SELECT_FILES);
 	this.ensureDefault("button_disabled", false);
 	this.ensureDefault("button_placeholder_id", null);
-	
+	*/
+
 	// Debug Settings
 	this.ensureDefault("debug", false);
 	this.settings.debug_enabled = this.settings.debug;	// Here to maintain v2 API
@@ -143,11 +149,7 @@ SWFUpload.prototype.initSettings = function () {
 };
 
 SWFUpload.prototype.loadFlash = function () {
-	if (this.settings.button_placeholder_id !== "") {
-		this.replaceWithFlash();
-	} else {
-		this.appendFlash();
-	}
+	this.insertFlash();
 };
 
 // Private: appendFlash gets the HTML tag for the Flash
@@ -176,43 +178,35 @@ SWFUpload.prototype.appendFlash = function () {
 	container.innerHTML = this.getFlashHTML();	// Using innerHTML is non-standard but the only sensible way to dynamically add Flash in IE (and maybe other browsers)
 };
 
-// Private: replaceWithFlash replaces the button_placeholder element with the flash movie.
-SWFUpload.prototype.replaceWithFlash = function () {
-	var targetElement, tempParent;
+// Private: insertFlash inserts the flash movie into the container element.
+SWFUpload.prototype.insertFlash = function () {
+	var targetElement, container;
 
 	// Make sure an element with the ID we are going to use doesn't already exist
 	if (document.getElementById(this.movieName) !== null) {
 		throw "ID " + this.movieName + " is already in use. The Flash Object could not be added";
 	}
 
-	// Get the body tag where we will be adding the flash movie
-	targetElement = document.getElementById(this.settings.button_placeholder_id);
+	// Get the container elt into which we'll insert the flash movie
+	containerElement = document.getElementById(this.settings.flash_container_id);
 
-	if (targetElement == undefined) {
-		throw "Could not find the placeholder element.";
+	if (containerElement == undefined) {
+		throw "Could not find the container element.";
 	}
 
-	// Append the container and load the flash
-	tempParent = document.createElement("div");
-	tempParent.innerHTML = this.getFlashHTML();	// Using innerHTML is non-standard but the only sensible way to dynamically add Flash in IE (and maybe other browsers)
-	targetElement.parentNode.replaceChild(tempParent.firstChild, targetElement);
-	//targetElement.innerHTML = this.getFlashHTML();
-	
-	// Fix IE Flash/Form bug
-	if (window[this.movieName] == undefined) {
-		window[this.movieName] = this.getMovieElement();
-	}
-	
+	// place flash embed inside the container element
+	containerElement.innerHTML = this.getFlashHTML();
 };
 
 // Private: getFlashHTML generates the object tag needed to embed the flash in to the document
 SWFUpload.prototype.getFlashHTML = function () {
 	// Flash Satay object syntax: http://www.alistapart.com/articles/flashsatay
-	return ['<object id="', this.movieName, '" type="application/x-shockwave-flash" data="', this.settings.flash_url, '" width="', this.settings.button_width, '" height="', this.settings.button_height, '">',
+	return ['<object id="', this.movieName, '" type="application/x-shockwave-flash" data="', this.settings.flash_url, '" width="', this.settings.flash_width, '" height="', this.settings.flash_height, '" style="-moz-user-focus: ignore;">',
 				'<param name="movie" value="', this.settings.flash_url, '" />',
 				'<param name="bgcolor" value="', this.settings.flash_color, '" />',
 				'<param name="quality" value="high" />',
 				'<param name="menu" value="false" />',
+				'<param name="wmode" value="', this.settings.flash_wmode ,'" />',
 				'<param name="allowScriptAccess" value="always" />',
 				'<param name="flashvars" value="' + this.getFlashVars() + '" />',
 				'</object>'].join("");
@@ -235,15 +229,14 @@ SWFUpload.prototype.getFlashVars = function () {
 			"&amp;fileTypesDescription=", encodeURIComponent(this.settings.file_types_description),
 			"&amp;fileSizeLimit=", encodeURIComponent(this.settings.file_size_limit),
 			"&amp;fileUploadLimit=", encodeURIComponent(this.settings.file_upload_limit),
-			"&amp;fileQueueLimit=", encodeURIComponent(this.settings.file_queue_limit),
-			"&amp;debugEnabled=", encodeURIComponent(this.settings.debug_enabled),
-			"&amp;buttonImageURL=", encodeURIComponent(this.settings.button_image_url),
-			"&amp;buttonWidth=", encodeURIComponent(this.settings.button_width),
-			"&amp;buttonHeight=", encodeURIComponent(this.settings.button_height),
-			"&amp;buttonText=", encodeURIComponent(this.settings.button_text),
-			"&amp;buttonTextStyle=", encodeURIComponent(this.settings.button_text_style),
-			"&amp;buttonAction=", encodeURIComponent(this.settings.button_action),
-			"&amp;buttonDisabled=", encodeURIComponent(this.settings.button_disabled)
+			//"&amp;fileQueueLimit=", encodeURIComponent(this.settings.file_queue_limit),
+			//"&amp;buttonImage_url=", encodeURIComponent(this.settings.button_image_url),
+			//"&amp;buttonWidth=", encodeURIComponent(this.settings.button_width),
+			//"&amp;buttonHeight=", encodeURIComponent(this.settings.button_height),
+			//"&amp;buttonText=", encodeURIComponent(this.settings.button_text),
+			//"&amp;buttonTextStyle=", encodeURIComponent(this.settings.button_text_style),
+			//"&amp;buttonAction=", encodeURIComponent(this.settings.button_action),
+			//"&amp;buttonDisabled=", encodeURIComponent(this.settings.button_disabled)
 		].join("");
 };
 
@@ -312,8 +305,6 @@ SWFUpload.prototype.destroy = function () {
 		delete this.customSettings;
 		delete this.eventQueue;
 		delete this.movieName;
-		
-		delete window[this.movieName];
 		
 		return true;
 	} catch (ex1) {

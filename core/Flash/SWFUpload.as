@@ -1,5 +1,4 @@
 package {
-	import flash.display.DisplayObjectContainer;
 	import flash.display.Loader;
 	import flash.display.Stage;
 	import flash.display.Sprite;
@@ -15,12 +14,9 @@ package {
 	import flash.external.ExternalInterface;
 	import flash.system.Security;
 	import flash.text.AntiAliasType;
-	import flash.text.StaticText;
 	import flash.text.StyleSheet;
-	import flash.text.TextDisplayMode;
 	import flash.text.TextField;
 	import flash.text.TextFieldType;
-	import flash.text.TextFieldAutoSize;
 	import flash.text.TextFormat;
 	import flash.ui.Mouse;
 
@@ -34,7 +30,7 @@ package {
 			var SWFUpload:SWFUpload = new SWFUpload();
 		}
 		
-		private const build_number:String = "SWFUPLOAD 2.2.0 Alpha 2008-10-16";
+		private const build_number:String = "SWFUPLOAD 2.2.0 2008-10-16 (brendan)";
 		
 		// State tracking variables
 		private var fileBrowserMany:FileReferenceList = new FileReferenceList();
@@ -83,6 +79,7 @@ package {
 		private var requeueOnError:Boolean = false;
 		private var debugEnabled:Boolean;
 
+		/*
 		private var buttonLoader:Loader;
 		private var buttonTextField:TextField;
 		private var buttonImageURL:String;
@@ -94,6 +91,7 @@ package {
 		private var buttonStateOver:Boolean;
 		private var buttonStateMouseDown:Boolean;
 		private var buttonStateDisabled:Boolean;
+		*/
 		
 		// Error code "constants"
 		// Size check constants
@@ -121,9 +119,14 @@ package {
 
 		
 		// Button Actions
+		/*
 		private var BUTTON_ACTION_SELECT_FILE:Number                = -100;
 		private var BUTTON_ACTION_SELECT_FILES:Number               = -110;
 		private var BUTTON_ACTION_START_UPLOAD:Number               = -120;
+		*/
+		
+		// the button
+		private var buttonSprite:Sprite = new Sprite();
 		
 		public function SWFUpload() {
 			// Do the feature detection.  Make sure this version of Flash supports the features we need. If not
@@ -143,61 +146,86 @@ package {
 			this.fileBrowserMany.addEventListener(Event.SELECT, this.Select_Many_Handler);
 			this.fileBrowserMany.addEventListener(Event.CANCEL,  this.DialogCancelled_Handler);
 
-
-			this.stage.align = StageAlign.TOP_LEFT;
-			this.stage.scaleMode = StageScaleMode.NO_SCALE;			
-
 			// Setup the button and text label
+			/*
 			this.buttonLoader = new Loader();
 			this.stage.addChild(this.buttonLoader);
-
-			var self:SWFUpload = this;
+			*/
 			
+			var thisobj:Object = this;
 			this.stage.addEventListener(MouseEvent.CLICK, function (event:MouseEvent):void {
-				self.UpdateButtonState();
-				self.ButtonClickHandler(event);
+				thisobj.SelectFiles();
+			});
+			
+			//
+			// setup a button that's the entire size of the stage, clicking this button will trigger the browse box
+			// -- code borrowed from YUI's experimental uploader
+			function transparentStageResize (evt:Event) : void {
+		 		buttonSprite.width = buttonSprite.stage.stageWidth;
+		 		buttonSprite.height = buttonSprite.stage.stageHeight;
+		 	}
+		 	
+			buttonSprite.graphics.beginFill(0xffffff, 0);
+			buttonSprite.graphics.drawRect(0,0,5,5);
+			buttonSprite.width = this.stage.stageWidth;
+			buttonSprite.height = this.stage.stageHeight;
+			buttonSprite.graphics.endFill();
+			this.stage.scaleMode = StageScaleMode.NO_SCALE;
+			this.stage.align = StageAlign.TOP_LEFT;
+			this.stage.tabChildren = false;
+			
+			this.stage.addEventListener(Event.RESIZE, transparentStageResize);
+			
+			this.addEventListener(MouseEvent.CLICK, function (event:MouseEvent):void {
+				thisobj.SelectFiles();
+			});
+			
+			this.buttonMode = true;
+			this.useHandCursor = true;
+			this.addChild(buttonSprite);
+
+			
+			
+			/*
+			this.stage.addEventListener(MouseEvent.CLICK, function (event:MouseEvent):void {
+				this.UpdateButtonState();
+				this.ButtonClickHandler(Event);
 			});
 			this.stage.addEventListener(MouseEvent.MOUSE_DOWN, function (event:MouseEvent):void {
-				self.buttonStateMouseDown = true;
-				self.UpdateButtonState();
+				this.buttonStateMouseDown = true;
+				this.UpdateButtonState();
 			});
 			this.stage.addEventListener(MouseEvent.MOUSE_UP, function (event:MouseEvent):void {
-				self.buttonStateMouseDown = false;
-				self.UpdateButtonState();
+				this.buttonStateMouseDown = false;
+				this.UpdateButtonState();
 			});
 			this.stage.addEventListener(MouseEvent.MOUSE_OVER, function (event:MouseEvent):void {
-				self.buttonStateMouseDown = event.buttonDown;
-				self.buttonStateOver = true;
-				self.UpdateButtonState();
+				this.buttonStateMouseDown = event.buttonDown;
+				this.buttonStateOver = true;
+				this.UpdateButtonState();
 			});
 			this.stage.addEventListener(MouseEvent.MOUSE_OUT, function (event:MouseEvent):void {
-				self.buttonStateMouseDown = false;
-				self.buttonStateOver = false;
-				self.UpdateButtonState();
+				this.buttonStateMouseDown = false;
+				this.buttonStateOver = false;
+				this.UpdateButtonState();
 			});
-			// Handle the mouse leaving the flash movie altogether
 			this.stage.addEventListener(Event.MOUSE_LEAVE, function (event:Event):void {
-				self.buttonStateMouseDown = false;
-				self.buttonStateOver = false;
-				self.UpdateButtonState();
+				this.buttonStateMouseDown = false;
+				this.buttonStateOver = false;
+				this.UpdateButtonState();
 			});
 			
 			this.buttonTextField = new TextField();
 			this.buttonTextField.type = TextFieldType.DYNAMIC;
 			this.buttonTextField.antiAliasType = AntiAliasType.ADVANCED;
-			this.buttonTextField.autoSize = TextFieldAutoSize.CENTER;
 			this.buttonTextField.cacheAsBitmap = true;
-			this.buttonTextField.multiline = true;
-			this.buttonTextField.wordWrap = true;
+			this.buttonTextField.wordWrap = false;
 			this.buttonTextField.tabEnabled = false;
 			this.buttonTextField.background = false;
-			this.buttonTextField.border = false;
 			this.buttonTextField.selectable = false;
-			this.buttonTextField.condenseWhite = true;
-			
 			this.stage.addChild(this.buttonTextField);
-			
 			// FIXME -- figure out about alignment
+			*/
 			
 			// Get the movie name
 			this.movieName = root.loaderInfo.parameters.movieName;
@@ -288,18 +316,17 @@ package {
 				this.requeueOnError = false;
 			}
 
+			/*
 			try {
 				this.SetButtonDimensions(Number(root.loaderInfo.parameters.buttonWidth), Number(root.loaderInfo.parameters.buttonHeight));
 			} catch (ex:Object) {
 				this.SetButtonDimensions(0, 0);
 			}
-
 			try {
 				this.SetButtonImageURL(String(root.loaderInfo.parameters.buttonImageURL));
 			} catch (ex:Object) {
 				this.SetButtonImageURL("");
 			}
-			
 			try {
 				this.SetButtonText(String(root.loaderInfo.parameters.buttonText));
 			} catch (ex:Object) {
@@ -319,10 +346,11 @@ package {
 			}
 			
 			try {
-				this.SetButtonDisabled(root.loaderInfo.parameters.buttonDisabled == "true" ? true : false);
+				this.SetButtonDisabled(Number(root.loaderInfo.parameters.buttonDisabled));
 			} catch (ex:Object) {
-				this.SetButtonDisabled(Boolean(false));
+				this.SetButtonDisabled(Number(false));
 			}
+			*/
 			
 			try {
 				ExternalInterface.addCallback("SelectFile", this.SelectFile);
@@ -351,12 +379,14 @@ package {
 				ExternalInterface.addCallback("SetRequeueOnError", this.SetRequeueOnError);
 				ExternalInterface.addCallback("SetDebugEnabled", this.SetDebugEnabled);
 
+				/*
 				ExternalInterface.addCallback("SetButtonImageURL", this.SetButtonImageURL);
 				ExternalInterface.addCallback("SetButtonDimensions", this.SetButtonDimensions);
 				ExternalInterface.addCallback("SetButtonText", this.SetButtonText);
 				ExternalInterface.addCallback("SetButtonTextStyle", this.SetButtonTextStyle);
 				ExternalInterface.addCallback("SetButtonAction", this.SetButtonAction);
 				ExternalInterface.addCallback("SetButtonDisabled", this.SetButtonDisabled);
+				*/
 			} catch (ex:Error) {
 				this.Debug("Callbacks where not set.");
 				return;
@@ -824,14 +854,16 @@ package {
 		/* *************************************************************
 			Button Handling Functions
 		*************************************************************** */
+		/*
 		private function SetButtonImageURL(button_image_url:String):void {
 			this.buttonImageURL = button_image_url;
 
 			try {
-				if (this.buttonImageURL === null || this.buttonImageURL !== "") {
+				if (this.buttonImageURL != undefined && this.buttonImageURL !== "") {
 					this.buttonLoader.load(new URLRequest(this.buttonImageURL));
 				}
 			} catch (ex:Object) {
+				
 			}
 		}
 		
@@ -850,8 +882,8 @@ package {
 		}
 		
 		private function UpdateButtonState():void {
-			var xOffset:Number = 0;
-			var yOffset:Number = 0;
+			var xOffset:Number = this.buttonWidth / -2;
+			var yOffset:Number = this.buttonHeight / -2 + 1;
 			
 			this.buttonLoader.x = xOffset;
 			this.buttonLoader.y = yOffset;
@@ -884,8 +916,7 @@ package {
 		
 		private function SetButtonText(button_text:String):void {
 			this.buttonText = button_text;
-			
-			this.SetButtonTextStyle(this.buttonTextStyle);
+			this.buttonTextField.htmlText = this.buttonText;
 		}
 		
 		private function SetButtonTextStyle(button_text_style:String):void {
@@ -894,8 +925,6 @@ package {
 			var style:StyleSheet = new StyleSheet();
 			style.parseCSS(this.buttonTextStyle);
 			this.buttonTextField.styleSheet = style;
-			this.buttonTextField.htmlText = this.buttonText;
-			this.UpdateTextDimensions();			
 		}
 		
 		private function SetButtonDisabled(disabled:Boolean):void {
@@ -904,27 +933,16 @@ package {
 		}
 		
 		private function UpdateTextDimensions():void {
-			var textWidth:Number = this.buttonTextField.textWidth;
-			var textHeight:Number = this.buttonTextField.textHeight;
-			
-			var leftOverWidth:Number = this.buttonWidth - textWidth;
-			var leftOverHeight:Number = this.buttonHeight - textHeight;
-			
-			if (leftOverWidth > 0) {
-				this.buttonTextField.x = Math.floor(leftOverWidth / 2);
-				this.buttonTextField.y = Math.floor(leftOverHeight / 2);
-			} else {
-				this.buttonTextField.x = 0;
-				this.buttonTextField.y = 0;
-			}
-			
 			this.buttonTextField.width = this.buttonWidth;
 			this.buttonTextField.height = this.buttonHeight;
+			this.buttonTextField.x = this.buttonWidth / -2;
+			this.buttonTextField.y = this.buttonHeight / -2 + 1;
 		}
 		
 		private function SetButtonAction(button_action:Number):void {
 			this.buttonAction = button_action;
 		}
+		*/
 		
 		/* *************************************************************
 			File processing and handling functions

@@ -1,0 +1,23 @@
+h1. SWFUpload with Transparent Flash Overlay
+
+h2. Umm, SWFUpload is Broken. Why?
+
+Flash 10's change in security regarding the @FileReference.browse@ broke SWFUpload. The details of the security changes are here: http://www.adobe.com/devnet/flashplayer/articles/fplayer10_security_changes_02.html#head3
+
+h2. My Changes
+
+I've made some minor changes to the code to allow SWFUpload to work with Flash 10 (and continue to work with Flash 9). I accomplish this by creating a transparent Flash overlay to sit atop an HTML element (e.g. a browse button). When the user clicks the HTML element, they're really clicking the Flash overlay. I've reworked swfupload.swf so it's one giant transparent button, and when that button is clicked it brings up the file browse dialog. After that it's business as usual.
+
+h2. Usage
+
+You'll need to make a few changes to get this version working with what you've already got set up.
+
+1) Get the updated swfupload.swf and swfupload.js files.
+2) Create a @div@ and position it directly over your browse button or link.
+3) Add a @flash_container_id@ setting. This should be set to the id of the @div@ element in step 1.
+
+h2. What Else?
+
+You can check out an example of this in action in the /samples/demos/flash10 director.
+
+If you're from the SWFUpload team and want some help integrating this, or if you want me to remove the code from this repository, just let me know. I'm happy to do either.
