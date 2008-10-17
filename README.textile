@@ -13,11 +13,13 @@ h2. Usage
 You'll need to make a few changes to get this version working with what you've already got set up.
 
 # Get the updated swfupload.swf and swfupload.js files.
-# Create a @div@ and position it directly over your browse button or link.
-# Add a @flash_container_id@ setting. This should be set to the id of the @div@ element in step 1.
+# Create a @div@ and position it directly over your browse button or link. This div will contain the transparent Flash overlay.
+# Add a @flash_container_id@ setting. This should be set to the id of the @div@ element in step 2.
 
 h2. What Else?
 
 You can check out an example of this in action in the @/samples/demos/flash10@ directory.
+
+To simplify things for myself, I ripped out all code that was in the works for the Flash button solution.
 
 If you're from the SWFUpload team and want some help integrating this, or if you want me to remove the code from this repository, just let me know. I'm happy to do either.
